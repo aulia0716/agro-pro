@@ -1,0 +1,382 @@
+---
+title: "Ubi_Kayu_mfg"
+author: "Aulia Dini Rafsanjani"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+Dokumentasi ini dibuat sebagai bagian dari penyusunan neraca komoditas pada industri pati ubi kayu. 
+
+Data mentah diterima dalam bentuk excel dengan nama mfg file. 
+
+KBLI industri pati ubi kayu adalah 10621 dan 10613 
+
+Series yang disajikan adalah tahun 2017-2022
+
+Grafik yang ditampilkan yaitu :
+
+1. Jumlah perusahaan 
+
+2. Jumlah tenaga kerja
+
+3. Total output. 
+
+Output didekati dari nilai produksi. 
+
+Pada penghitungan menggunakan file mfg, terdapat asumsi bahwa nilai produksi tidak hanya mencakup tepung tapioka saja tapi bisa saja ada nilai produksi dari hasil sampingan selain tepung tapioka. 
+
+4. Sebaran jumlah perusahaan 
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Library
+
+```{r}
+# Library 
+library(readxl)
+library(dplyr)
+library(ggplot2)
+library(sf)
+library(stringr)
+library(leaflet)
+```
+
+### Baca data
+
+```{r}
+# read dataset
+stpim22 <- read_excel("/Users/auliadinirafsanjani/Documents/Industri/01 Agro Summary/Data STPIM/mfg22h.xlsx")
+stpim21 <- read_excel("/Users/auliadinirafsanjani/Documents/Industri/01 Agro Summary/Data STPIM/mfg21e.xlsx", sheet = "Data")
+stpim20 <- read_excel("/Users/auliadinirafsanjani/Documents/Industri/01 Agro Summary/Data STPIM/mfg20f.xlsx")
+stpim19 <- read_excel("/Users/auliadinirafsanjani/Documents/Industri/01 Agro Summary/Data STPIM/mfg19E.xlsx")
+stpim18 <- read_excel("/Users/auliadinirafsanjani/Documents/Industri/01 Agro Summary/Data STPIM/mfg18d.xlsx")
+stpim17 <- read_excel("/Users/auliadinirafsanjani/Documents/Industri/01 Agro Summary/Data STPIM/mfg17e.xlsx")
+```
+
+### Filter data
+
+```{r}
+sub22_1 <- stpim22 %>% filter(Disic522 == "10621" | Disic522 == "10613")
+sub21_1 <- stpim21 %>% filter(Disic521 == "10621" | Disic521 == "10613")
+sub20_1 <- stpim20 %>% filter(Disic520 == "10621" | Disic520 == "10613")
+sub19_1 <- stpim19 %>% filter(Disic519 == "10621" | Disic519 == "10613")
+sub18_1 <- stpim18 %>% filter(Disic518 == "10621" | Disic518 == "10613")
+sub17_1 <- stpim17 %>% filter(Disic517 == "10621" | Disic517 == "10613")
+```
+
+### Jumlah Perusahaan
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+# Create a list of datasets with corresponding years
+data_list <- list(
+  "2017" = sub17_1,
+  "2018" = sub18_1,
+  "2019" = sub19_1,
+  "2020" = sub20_1,
+  "2021" = sub21_1,
+  "2022" = sub22_1
+)
+
+# Count number of rows (total establishments) for each year
+row_counts <- lapply(names(data_list), function(year) {
+  data <- data_list[[year]]
+  tibble(
+    Year = as.integer(year),
+    Total_Establishments = nrow(data)
+  )
+}) %>%
+  bind_rows()
+
+# Print the summary table
+print(row_counts)
+
+# Create bar chart with dark orange bars, labels, and y-axis limit = 200
+plot1 <- ggplot(row_counts, aes(x = factor(Year), y = Total_Establishments)) +
+  geom_col(fill = "darkorange") +
+  geom_text(aes(label = Total_Establishments),
+            vjust = -0.5, size = 4, color = "black") +
+  scale_y_continuous(limits = c(0, 200)) +  # changed from 180 to 200
+  labs(
+    title = "Jumlah Perusahaan Industri Pati Ubi Kayu tahun 2017–2022",
+    x = "Tahun",
+    y = "Jumlah Perusahaan"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold"),
+    axis.text = element_text(size = 12),
+    axis.title = element_text(size = 13)
+  )
+
+# print
+print(plot1)
+
+# Save the plot as JPEG
+ggsave(filename = "plot1.jpeg", 
+       plot = plot1, 
+       width = 10, height = 6, units = "in", 
+       dpi = 300)
+```
+
+### Tenaga Kerja
+
+```{r}
+# tk 2022
+sub22_1$tk22 <- sub22_1$Lprnop22 + sub22_1$Lprnon22 + sub22_1$Lnpnop22 + sub22_1$Lnpnon22
+
+# total labor 21
+sub21_1$tk21 <- sub21_1$Lprnol21 + sub21_1$Lprnof21 + sub21_1$Lnpnol21 + sub21_1$Lnpnof21
+
+# total labor 20
+sub20_1$tk20 <- sub20_1$Lprnol20 + sub20_1$Lprnof20 + sub20_1$Lnpnol20 + sub20_1$Lnpnof20
+
+# total labor 19
+sub19_1$tk19 <- sub19_1$Lprnol19 + sub19_1$Lprnof19 + sub19_1$Lnpnol19 + sub19_1$Lnpnof19 
+
+# total labor 18
+sub18_1$tk18 <- sub18_1$Lprnol18 + sub18_1$Lprnof18 + sub18_1$Lnpnol18 + sub18_1$Lnpnof18 
+
+# total labor 17
+sub17_1$tk17 <- sub17_1$Ltmnou17 + sub17_1$Ltwnou17
+```
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(scales)  # for label formatting
+
+# Create a named list of datasets and their corresponding tk variable names
+data_list <- list(
+  "2017" = sub17_1$tk17,
+  "2018" = sub18_1$tk18,
+  "2019" = sub19_1$tk19,
+  "2020" = sub20_1$tk20,
+  "2021" = sub21_1$tk21,
+  "2022" = sub22_1$tk22
+)
+
+# Compute total TK (sum) per year
+tk_summary <- lapply(names(data_list), function(year) {
+  tibble(
+    Year = as.integer(year),
+    Total_TK = sum(data_list[[year]], na.rm = TRUE)
+  )
+}) %>%
+  bind_rows()
+
+# Print summary table
+print(tk_summary)
+
+# Create bar chart with dark brown bars and thousand separators
+plot2 <- ggplot(tk_summary, aes(x = factor(Year), y = Total_TK)) +
+  geom_col(fill = "saddlebrown") +
+  geom_text(aes(label = format(Total_TK, big.mark = ".", decimal.mark = ",")),
+            vjust = -0.5, size = 4, color = "black") +
+  scale_y_continuous(
+    limits = c(0, 25000),
+    labels = label_number(big.mark = ".", decimal.mark = ",")
+  ) +
+  labs(
+    title = "Total Tenaga Kerja pada Industri Pati Ubi Kayu tahun 2017–2022",
+    x = "Tahun",
+    y = "Total Tenaga Kerja"
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold"),
+    axis.text = element_text(size = 12),
+    axis.title = element_text(size = 13)
+  )
+
+plot2
+
+# Save the plot as JPEG
+ggsave(filename = "plot2.jpeg", 
+       plot = plot2, 
+       width = 10, height = 6, units = "in", 
+       dpi = 300)
+```
+
+### Sebaran by provinsi tahun 2022
+
+```{r}
+# create map
+# open the map file
+geojson_data <- st_read("/Users/auliadinirafsanjani/Documents/Industri/01 Agro Summary/indonesia-prov.geojson")
+```
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(sf)
+library(viridis)
+
+# 1️⃣ Compute total establishments by province
+prov_join <- sub22_1 %>%
+  group_by(Dprovi22) %>%
+  summarise(count_22 = n()) %>%
+  ungroup() %>%
+  rename(kode = Dprovi22)  # make sure it matches the geojson 'kode' column
+
+prov_join$kode <- as.integer(prov_join$kode)
+
+# 2️⃣ Join with geojson map data
+merged_data <- geojson_data %>%
+  left_join(prov_join, by = "kode")
+
+# 3️⃣ Create choropleth map
+gbr1 <- ggplot(data = merged_data) +
+  geom_sf(aes(fill = count_22), color = "white") +  # color = "white" for borders
+  scale_fill_viridis_c(option = "plasma", na.value = "grey90") +  # nice color scale
+  theme_minimal() +
+  labs(
+    title = "Peta Sebaran Industri Pati Ubi Kayu tahun 2022",
+    fill = "Jumlah",
+    caption = "Sumber: STPIM2023"
+  ) +
+  theme(
+    plot.caption = element_text(hjust = 0, size = 10, face = "italic"),
+    plot.title = element_text(hjust = 0.5, face = "bold")
+  )
+gbr1
+
+# Save the plot as JPEG
+ggsave(filename = "gbr1.jpeg", 
+       plot = gbr1, 
+       width = 10, height = 6, units = "in", 
+       dpi = 300)
+```
+
+### Total Output
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+# Create a named list of datasets with their corresponding output variable names
+data_list <- list(
+  "2017" = list(data = sub17_1, var = "Yprvcu17"),
+  "2018" = list(data = sub18_1, var = "Yprvcu18"),
+  "2019" = list(data = sub19_1, var = "Yprvcu19"),
+  "2020" = list(data = sub20_1, var = "Yprvcu20"),
+  "2021" = list(data = sub21_1, var = "Yprvcu21"),
+  "2022" = list(data = sub22_1, var = "Yprvcu22")
+)
+
+# Compute sum for each year and convert to millions
+output_summary <- lapply(names(data_list), function(year) {
+  data <- data_list[[year]]$data
+  var_name <- data_list[[year]]$var
+  
+  tibble(
+    Year = as.integer(year),
+    Total_output = sum(data[[var_name]], na.rm = TRUE) / 1e6  # divide by 1,000,000
+  )
+}) %>%
+  bind_rows()
+
+# Print summary
+print(output_summary)
+
+# Create line chart in dark grey with y-axis limit 10,000
+plot3 <- ggplot(output_summary, aes(x = Year, y = Total_output)) +
+  geom_line(color = "darkgrey", size = 1.2) +
+  geom_point(color = "darkgrey", size = 3) +
+  geom_text(aes(label = format(Total_output, big.mark = ".", decimal.mark = ",", nsmall = 2)),
+            vjust = -0.5, size = 4) +
+  labs(
+    title = "Total Output per Tahun Industri Pati Ubi Kayu tahun 2017–2022",
+    x = "Tahun",
+    y = "Total output (Juta Rp)"
+  ) +
+  scale_x_continuous(breaks = 2017:2022) +
+  scale_y_continuous(limits = c(0, 10000)) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold"),
+    axis.text = element_text(size = 12),
+    axis.title = element_text(size = 13)
+  )
+
+# Save the plot as JPEG
+ggsave(filename = "plot3.jpeg", 
+       plot = plot3, 
+       width = 10, height = 6, units = "in", 
+       dpi = 300)
+```
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+# Create a named list of datasets with their corresponding output variable names
+data_list <- list(
+  "2017" = list(data = sub17_1, var = "Yprvcu17"),
+  "2018" = list(data = sub18_1, var = "Yprvcu18"),
+  "2019" = list(data = sub19_1, var = "Yprvcu19"),
+  "2020" = list(data = sub20_1, var = "Yprvcu20"),
+  "2021" = list(data = sub21_1, var = "Yprvcu21"),
+  "2022" = list(data = sub22_1, var = "Yprvcu22")
+)
+
+# Compute sum for each year and convert to trillions (Rp)
+output_summary <- lapply(names(data_list), function(year) {
+  data <- data_list[[year]]$data
+  var_name <- data_list[[year]]$var
+  
+  tibble(
+    Year = as.integer(year),
+    Total_output = sum(data[[var_name]], na.rm = TRUE) / 1e9
+  )
+}) %>%
+  bind_rows()
+
+# Function to format numbers with point as thousands and comma as decimals
+format_label <- function(x) {
+  sapply(x, function(value) {
+    parts <- strsplit(sprintf("%.2f", value), "\\.")[[1]]
+    integer <- as.integer(parts[1])
+    decimal <- parts[2]
+    integer_formatted <- format(integer, big.mark = ".", scientific = FALSE)
+    paste0(integer_formatted, ",", decimal)
+  })
+}
+
+# Plot
+plot3 <- ggplot(output_summary, aes(x = Year, y = Total_output)) +
+  geom_line(color = "darkgrey", size = 1.2) +
+  geom_point(color = "darkgrey", size = 3) +
+  geom_text(aes(label = format_label(Total_output)), vjust = -0.5, size = 4) +
+  labs(
+    title = "Total Output per Tahun Industri Pati Ubi Kayu (2017–2022)",
+    x = "Tahun",
+    y = "Total output (Triliun Rp)"
+  ) +
+  scale_x_continuous(breaks = 2017:2022) +
+  scale_y_continuous(
+    limits = c(0, 15),
+    labels = format_label
+  ) +
+  theme_minimal() +
+  theme(
+    plot.title = element_text(hjust = 0.5, face = "bold"),
+    axis.text = element_text(size = 12),
+    axis.title = element_text(size = 13)
+  )
+
+# print result
+print(plot3)
+
+# Save the plot as JPEG
+ggsave(filename = "plot3.jpeg", 
+       plot = plot3, 
+       width = 10, height = 6, units = "in", 
+       dpi = 300)
+```
+
+
