@@ -1,0 +1,584 @@
+---
+title: "*Executive Summary*: Statistik Industri Agro"
+author: "Aulia Dini Rafsanjani"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = FALSE,
+  warning = FALSE,
+  message = FALSE
+)
+```
+
+### Pendahuluan
+
+Agroindustri (Agro) didefiniskan industri yang memanfaatkan hasil pertanian sebagai bahan baku atau produk yang digunakan dalam usaha pertanian. Industri ini disiapkan untuk mengolah komoditas pertanian primer, baik tanaman maupun hewan, menjadi produk olahan, baik produk antara maupun produk akhir. Agro dianggap sebagai tulang punggung ekonomi Indonesia karena menyumbang >52% PDB industri non-migas, menyerap >4 juta tenaga kerja, dan menargetkan ekspor tinggi (misal:sawit dan karet) melalui hilirisasi berkelanjutan. 
+
+Saat ini, agroindustri menjadi fokus utama pemerintah semenjak kebijakan hilirisasi diterapkan. Tujuan dari kebijakan hilirisasi adalah adanya peningkatan nilai tambah dari produk pertanian. Dari 28 komoditas hilirisasi, terdapat 14 komoditas yang menjadi bagian dari Agroindustri, yaitu : sawit, kelapa, karet, biofuel, kayu balok, getah pinus, udang, ikan TCT, rajungan, rumput laut, garam, kakao, pala, tilapia. 
+
+Dokumen ini disusun untuk menyediakan *executive summary* tentang industri agro, meliputi data jumlah perusahaan, tenaga kerja, output dan strukturnya, input dan strukturnya, beserta isu terkait yang sedang berkembang tentang industri agro. Melalui executive summary ini, diharapkan para pemangku kebijakan dapat memperoleh informasi yang komprehensif sehingga kebijakan yang disusun adalah kebijakan berbasis data *(evidence-based policy)*. 
+
+### *Disclaimer*
+
+- Industri Agro mencakup kategori C (Industri Pengolahan) golongan pokok 13 Klasifikasi Baku Lapangan Usaha Indonesia (KBLI) yaitu : Industri Agro meliputi beberapa kode Klasifikasi Baku Lapangan Usaha Indonesia (KBLI), yaitu : 10-Industri Makanan, 11- Industri Minuman, 12- Industri Pengolahan Tembakau, 16-Industri Kayu, Barang dari Kayu dan Gabus (Tidak Termasuk Furnitur) dan Barang Anyaman dari Bambu, Rotan dan Sejenisnya, 17-Industri Kertas dan Barang dari Kertas, 22-Industri Karet, Barang dari Karet dan Plastik, 31-Industri *Furniture*.
+
+- Sumber data yang digunakan merupakan gabungan dari hasil Updating Direktori (DPA) dan Survei Tahunan Perusahaan Industri Manufaktur (STPIM) yang dilakukan setiap tahun. Pada tahun 2016, STPIM terintegrasi dengan Sensus Ekonomi 2016. Target responden survei adalah perusahaan berskala besar dan menengah.
+
+- Klasifikasi skala usaha didasarkan pada tenaga kerja hingga tahun 2020. Setelahnya, klasifikasi skala usaha sejak tahun 2021 menjadi: Industri besar adalah perusahaan industri manufaktur yang memenuhi salah satu kriteria jumlah tenaga kerja lebih dari 99 orang atau nilai akumulasi investasi/modal tetap sejak pendirian pabrik lebih dari Rp. 10 miliar atau omset perusahaan lebih besar dari Rp. 50 miliar; Industri menengah adalah perusahaan industri manufaktur yang memenuhi salah satu kriteria jumlah tenaga kerja kurang dari sama dengan 99 orang atau nilai akumulasi investasi/modal tetap sejak pendirian pabrik Rp. 5-10 miliar atau omset perusahaan Rp. 10-50 miliar.
+
+- Publikasi lengkap dapat dilihat di www.bps.go.id
+
+```{r}
+# Library
+library(readxl)
+library(dplyr)
+library(ggplot2)
+library(scales)
+library(sf)
+library(stringr)
+library(leaflet)
+library(data.table)
+library(tidyr)
+```
+
+```{r warning=FALSE, echo=FALSE, message=FALSE, results='hide'}
+# baca dataset
+# data DPA
+dpa25 <- read_excel("/Users/auliadinirafsanjani/Documents/Industri/01 Agro Summary/vicon/bahan publikasi direktori 2025.xlsx", sheet="vicon")
+dpa24 <- read_excel("/Users/auliadinirafsanjani/Documents/Industri/01 Agro Summary/vicon/DPA 2024 Publish.xlsx")
+dpa23 <- read_excel("/Users/auliadinirafsanjani/Documents/Industri/01 Agro Summary/vicon/dir23j.xls")
+dpa22 <- read_excel("/Users/auliadinirafsanjani/Documents/Industri/01 Agro Summary/DPA/DPA NASIONAL tahun 2022.xlsx")
+dpa21 <- read_excel("/Users/auliadinirafsanjani/Documents/Industri/01 Agro Summary/DPA/DPA NASIONAL tahun 2021.xlsx")
+
+# nama provinsi
+prov_ref <- read_excel("/Users/auliadinirafsanjani/Documents/Industri/01 Agro Summary/vicon/kode_provinsi_indonesia.xlsx")
+
+# shape file
+indomap <- st_read("/Users/auliadinirafsanjani/Documents/Industri/2026/03 Data/Agro2026/1_INDO_BY_PROV/INDO_PROV_2024_1.shp")
+
+# data stpim
+stpim22 <- read_excel("/Users/auliadinirafsanjani/Documents/Industri/01 Agro Summary/Data STPIM/mfg22h.xlsx")
+stpim21 <- read_excel("/Users/auliadinirafsanjani/Documents/Industri/01 Agro Summary/Data STPIM/mfg21e.xlsx", sheet = "Data")
+stpim20 <- read_excel("/Users/auliadinirafsanjani/Documents/Industri/01 Agro Summary/Data STPIM/mfg20f.xlsx")
+stpim19 <- read_excel("/Users/auliadinirafsanjani/Documents/Industri/01 Agro Summary/Data STPIM/mfg19E.xlsx")
+stpim18 <- read_excel("/Users/auliadinirafsanjani/Documents/Industri/01 Agro Summary/Data STPIM/mfg18d.xlsx")
+stpim17 <- read_excel("/Users/auliadinirafsanjani/Documents/Industri/01 Agro Summary/Data STPIM/mfg17e.xlsx")
+```
+
+```{r}
+# buat variabel kbli 2 digit
+dpa21$KBLI2 <- substr(dpa21$kbli, 1, 2)
+dpa22$KBLI2 <- substr(dpa22$kbli, 1, 2)
+
+# subset dataset
+fil_dpa21 <- dpa22[, c("kip", "prov", "KBLI2")]
+fil_dpa22 <- dpa22[, c("kip", "prov", "KBLI2")]
+fil_dpa23 <- dpa23[, c("kip", "kd_prov", "kbli2d")]
+fil_dpa24 <- dpa24[, c("KIP", "Provinsi", "KBLI")]
+fil_dpa25 <- dpa25[, c("kip", "prov_var", "KBLI2")]
+
+# ubah nama variabel
+setnames(fil_dpa21, c("kip", "prov", "KBLI2"), c("KIP", "PROV", "KBLI2"))
+setnames(fil_dpa22, c("kip", "prov", "KBLI2"), c("KIP", "PROV", "KBLI2"))
+setnames(fil_dpa23, c("kip", "kd_prov", "kbli2d"), c("KIP", "PROV", "KBLI2"))
+setnames(fil_dpa24, c("KIP", "Provinsi", "KBLI"), c("KIP", "PROV", "KBLI2"))
+setnames(fil_dpa25, c("kip", "prov_var", "KBLI2"), c("KIP", "PROV", "KBLI2"))
+
+dpa_list <- list(fil_dpa21, fil_dpa22, fil_dpa23, fil_dpa24, fil_dpa25)
+
+dpa_list <- lapply(dpa_list, function(x) {
+  x %>% filter(KBLI2 %in% c("10","11","12","16","17","22","31"))
+})
+
+fil_dpa21 <- dpa_list[[1]]
+fil_dpa22 <- dpa_list[[2]]
+fil_dpa23 <- dpa_list[[3]]
+fil_dpa24 <- dpa_list[[4]]
+fil_dpa25 <- dpa_list[[5]]
+```
+
+### Jumlah Perusahaan
+
+Jumlah industri sektor agro cenderung mengalami penurunan dari segi jumlah selama tahun 2021 hingga tahun 2025. Jumlah industri sektor agro cenderung mengalami penurunan dari segi jumlah selama tahun 2021 hingga tahun 2025. Jumlah industri pada tahun 2021 adalah 18017, sedangkan pada tahun 2025 adalah 15126. Selama lima tahun terakhir, terjadi penurunan sebesar 16,05 persen. Penurunan signifikan terjadi pada tahun 2023 dimana terjadi penurunan hingga tiga ribu perusahaan. Selama tahun 2023 hingga 2025, jumlah industri agro terus mengalami penurunan meskipun tidak secara signifikan. 
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+# Create a summary table of total establishments
+perus_count <- tibble(
+  tahun = 2021:2025,
+  total_perus = c(
+    nrow(fil_dpa21),
+    nrow(fil_dpa22),
+    nrow(fil_dpa23),
+    nrow(fil_dpa24),
+    nrow(fil_dpa25)
+  )
+)
+```
+
+```{r}
+# Bar chart with labels
+ggplot(perus_count, aes(x = factor(tahun), y = total_perus)) +
+  geom_col() +
+  geom_bar(stat = "identity", fill = "saddlebrown") +
+  geom_text(aes(label = total_perus), vjust = -0.3) +
+  labs(
+    title = "Total Perusahaan yang Aktif berdasarkan Direktori Pemutakhiran Awal (DPA) 2021–2025",
+    x = "Tahun",
+    y = "Jumlah Perusahaan",
+    caption = "Updating DPA (2021-2025)"
+  ) +
+  theme_minimal()
+
+perchange <- round((perus_count$total_perus[1] - perus_count$total_perus[5]) / perus_count$total_perus[1] * 100, 2)
+```
+
+```{r, echo=FALSE, results='hide'}
+### Sebaran industri berdasarkan provinsi 
+library(dplyr)
+
+# Combine all datasets
+dpa_all <- bind_rows(
+  fil_dpa21 %>% mutate(tahun = 2021),
+  fil_dpa22 %>% mutate(tahun = 2022),
+  fil_dpa23 %>% mutate(tahun = 2023),
+  fil_dpa24 %>% mutate(tahun = 2024),
+  fil_dpa25 %>% mutate(tahun = 2025)
+)
+
+tab_prov <- dpa_all %>%
+  group_by(PROV, tahun) %>%
+  summarise(total_perus = n(), .groups = "drop")
+
+tab_prov2 <- tab_prov %>%
+  pivot_wider(
+    names_from = tahun,
+    values_from = total_perus
+  )
+
+tab_prov2 <- tab_prov2 %>%
+  left_join(prov_ref, by = "PROV") %>%
+  select(PROV, NAMA_PROV, `2021`, `2022`, `2023`, `2024`, `2025`)
+
+tab_prov2
+```
+
+### Sebaran Industri Agro tahun 2025
+
+Jumlah industri agro tahun 2025 tertinggi berlokasi di Jawa Timur dengan jumlah 3214 dan terendah berada di Papua Pegunungan dengan jumlah 6. Secara umum, lokasi industri Agro dominan secara jumlah berada di pulau Jawa. 
+
+```{r}
+tab25 <- dpa_all %>%
+  filter(tahun == 2025) %>%
+  group_by(PROV) %>%
+  summarise(total_perus = n(), .groups = "drop")
+
+map_data <- indomap %>%
+  left_join(tab25, by = c("kdprov" = "PROV"))
+
+ggplot(map_data) +
+  geom_sf(aes(fill = total_perus)) +
+  scale_fill_viridis_c(
+    option = "plasma",
+    na.value = "grey90"
+  ) +
+  labs(
+    title = "Total Perusahaan Aktif Tahun 2025",
+    fill = "Jumlah Perusahaan", 
+    caption = "Sumber: Updating DPA (2017-2022)"
+  ) +
+  theme_minimal()
+```
+
+### Tenaga Kerja
+
+Jumlah tenaga kerja di industri agro secara umum mengalami penurunan selama tahun 2017 hingga tahun 2022. Pada tahun 2017, industri agro menyerap 2,6 juta tenaga kerja. Namun, pada tahun 2022, penyerapan tenaga kerja industri agro sebesar 2,3 juta. Penurunan sebesar 12 persen terjadi selama periode 2017-2022. 
+
+```{r}
+# subset dataset
+fil_stpim17 <- stpim17[, c("Psid", "Dprovi17", "Disic517", "Ltlnou17", "Yprvcu17","Yisvcu17","Yrnvcu17", "Zpdvcu17", "Zndvcu17", "Rdnvcu17", "Rimvcu17", "It1vcu17", "Output17", "Iinput17", "Vtlvcu17")]
+fil_stpim18 <- stpim18[, c("Kipb", "Dprovi18", "Disic518", "Ltlnou18", "Yprvcu18", "Yisvcu18", "Yrnvcu18", "Zpdvcu18", "Zndvcu18", "Rdnvcu18", "Rimvcu18", "It1vcu18", "Output18", "Iinput18", "Vtlvcu18")]
+fil_stpim19 <- stpim19[, c("Kipb", "Dprovi19", "Disic519", "Ltlnou19", "Yprvcu19", "Yisvcu19", "Yrnvcu19", "Zpdvcu19", "Zndvcu19", "Rdnvcu19", "Rimvcu19", "It1vcu19", "Output19", "Iinput19", "Vtlvcu19")]
+fil_stpim20 <- stpim20[, c("Kipb", "Dprovi20", "Disic520", "Ltlnou20", "Yprvcu20", "Yisvcu20", "Yrnvcu20", "Zpdvcu20","Zndvcu20", "Rdnvcu20", "Rimvcu20", "It1vcu20", "Output20", "Iinput20", "Vtlvcu20")]
+fil_stpim21 <- stpim21[, c("Kipb", "Dprovi21", "Disic521", "Ltlnou21", "Yprvcu21", "Yisvcu21", "Yrnvcu21", "Zpdvcu21", "Zndvcu21", "Rdnvcu21", "Rimvcu21", "It1vcu21", "Output21", "Iinput21", "Vtlvcu21")]
+fil_stpim22 <- stpim22[, c("Kipb", "Dprovi22", "Disic522", "Ltlnou22", "Yprvcu22", "Yisvcu22", "Yrnvcu22", "Zpdvcu22", "Zndvcu22", "Rdnvcu22", "Rimvcu22", "It1vcu22", "Output22", "Iinput22", "Vtlvcu22")]
+```
+
+```{r}
+years <- 17:22
+
+for(i in years){
+  df_name <- paste0("fil_stpim", i)
+  var_name <- paste0("Disic5", i)
+  new_var  <- paste0(var_name, "_2d")
+  
+  assign(df_name,
+         get(df_name) %>%
+           mutate(!!new_var := substr(as.character(.data[[var_name]]), 1, 2))
+  )
+}
+```
+
+```{r}
+years <- 17:22
+kbliagro <- c("10", "11", "12", "16", "17", "22", "31")
+
+for(i in years){
+  df_name <- paste0("fil_stpim", i)
+  var_name <- paste0("Disic5", i, "_2d")
+  
+  assign(df_name, 
+         get(df_name) %>%
+           filter(.data[[var_name]] %in% kbliagro))
+}
+```
+
+```{r}
+# total tk 2017-2022
+sum_ltlnou <- data.frame(
+  year = 2017:2022,
+  total = c(
+    sum(fil_stpim17$Ltlnou17, na.rm = TRUE),
+    sum(fil_stpim18$Ltlnou18, na.rm = TRUE),
+    sum(fil_stpim19$Ltlnou19, na.rm = TRUE),
+    sum(fil_stpim20$Ltlnou20, na.rm = TRUE),
+    sum(fil_stpim21$Ltlnou21, na.rm = TRUE),
+    sum(fil_stpim22$Ltlnou22, na.rm = TRUE)
+  )
+)
+
+# buat plot
+ggplot(sum_ltlnou, aes(x = factor(year), y = total)) +
+  geom_bar(stat = "identity", fill = "khaki3") +
+  geom_text(
+    aes(label = label_number(big.mark = ".", decimal.mark = ",")(total)),
+    vjust = -0.3
+  ) +
+  labs(
+    x = "Tahun",
+    y = "Total Tenaga Kerja",
+    title = "Total Tenaga Kerja Industri Agro tahun 2017-2022", 
+    caption = "Sumber: STPIM 2017–2022"
+  ) +
+  theme_minimal()
+```
+
+### Output
+
+Output industri agro mengalami kecenderungan peningkatan sejak tahun 2017 hingga 2022. Peningkatan terjadi sebesar 27 persen, semula adalah 2.288 Trilyun menjadi 3.131 Trilyun. Pada saat Covid-19 melanda Indonesia pada tahun 2019-2020, terdapat sedikit penurunan output industri agro, namun tidak signifikan. 
+
+```{r}
+# data total output
+sum_output <- data.frame(
+  year = 2017:2022,
+  total = c(
+    sum((fil_stpim17$Yprvcu17 + fil_stpim17$Yisvcu17 + fil_stpim17$Yrnvcu17)/1e9, na.rm = TRUE),
+    sum((fil_stpim18$Yprvcu18 + fil_stpim18$Yisvcu18 + fil_stpim18$Yrnvcu18)/1e9, na.rm = TRUE),
+    sum((fil_stpim19$Yprvcu19 + fil_stpim19$Yisvcu19 + fil_stpim19$Yrnvcu19)/1e9, na.rm = TRUE),
+    sum((fil_stpim20$Yprvcu20 + fil_stpim20$Yisvcu20 + fil_stpim20$Yrnvcu20)/1e9, na.rm = TRUE),
+    sum((fil_stpim21$Yprvcu21 + fil_stpim21$Yisvcu21 + fil_stpim21$Yrnvcu21)/1e9, na.rm = TRUE),
+    sum((fil_stpim22$Yprvcu22 + fil_stpim22$Yisvcu22 + fil_stpim22$Yrnvcu22)/1e9, na.rm = TRUE)
+  )
+)
+
+# buat plot
+ggplot(sum_output, aes(x = factor(year), y = total)) +
+  geom_bar(stat = "identity", fill = "orange1") +
+  geom_text(
+    aes(label = label_number(big.mark = ".")(total)),
+    vjust = -0.3
+  ) +
+  labs(
+    x = "Tahun",
+    y = "Total Output (Trilyun)",
+    title = "Total Output Industri Agro tahun 2017-2022", 
+    caption = "Sumber: STPIM Data 2017–2022"
+  ) +
+  theme_minimal()
+```
+
+### Struktur Output
+
+Struktur output industri agro rata-rata didominasi oleh nilai produksi barang. Pada tahun 2022, nilai produksi industri agro mencapai 3.130 Trilyun Rupiah. Sementara, proporsi terkecil dalam output industri agro adalah nilai maklun/jasa yang nilainya sebesar 126 Trilyun Rupiah. Sisanya, 87 Trilyun berasal dari pendapatan lainnya. 
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(scales)
+
+sum_output_comp <- data.frame(
+  year = 2017:2022,
+  Produksi_barang = c(
+    sum(fil_stpim17$Yprvcu17/1e9, na.rm = TRUE),
+    sum(fil_stpim18$Yprvcu18/1e9, na.rm = TRUE),
+    sum(fil_stpim19$Yprvcu19/1e9, na.rm = TRUE),
+    sum(fil_stpim20$Yprvcu20/1e9, na.rm = TRUE),
+    sum(fil_stpim21$Yprvcu21/1e9, na.rm = TRUE),
+    sum(fil_stpim22$Yprvcu22/1e9, na.rm = TRUE)
+  ),
+  Maklun_Jasa = c(
+    sum(fil_stpim17$Yisvcu17/1e9, na.rm = TRUE),
+    sum(fil_stpim18$Yisvcu18/1e9, na.rm = TRUE),
+    sum(fil_stpim19$Yisvcu19/1e9, na.rm = TRUE),
+    sum(fil_stpim20$Yisvcu20/1e9, na.rm = TRUE),
+    sum(fil_stpim21$Yisvcu21/1e9, na.rm = TRUE),
+    sum(fil_stpim22$Yisvcu22/1e9, na.rm = TRUE)
+  ),
+  Lainnya = c(
+    sum(fil_stpim17$Yrnvcu17/1e9, na.rm = TRUE),
+    sum(fil_stpim18$Yrnvcu18/1e9, na.rm = TRUE),
+    sum(fil_stpim19$Yrnvcu19/1e9, na.rm = TRUE),
+    sum(fil_stpim20$Yrnvcu20/1e9, na.rm = TRUE),
+    sum(fil_stpim21$Yrnvcu21/1e9, na.rm = TRUE),
+    sum(fil_stpim22$Yrnvcu22/1e9, na.rm = TRUE)
+  )
+)
+
+sum_output_long <- sum_output_comp %>%
+  pivot_longer(
+    cols = -year,
+    names_to = "Komponen",
+    values_to = "nilai"
+  )
+
+# buat plot
+ggplot(sum_output_long, aes(x = factor(year), y = nilai, fill = Komponen)) +
+  geom_bar(stat = "identity") +
+  geom_text(
+    aes(label = label_number(big.mark = ".", decimal.mark = ",")(nilai)),
+    position = position_stack(vjust = 0.5),
+    size = 2.5
+  ) +
+  labs(
+    x = "Tahun",
+    y = "Total Output (Triliun)",
+    title = "Komponen Output Industri Agro Tahun 2017–2022",
+    fill = "Komponen",
+    caption = "Sumber: Data STPIM 2017–2022"
+  ) +
+  scale_y_continuous(labels = label_number(big.mark = ".", decimal.mark = ",")) +
+  theme_minimal()
+```
+
+### Input
+
+Total pengeluaran untuk input produksi industri agro cenderung mengalami kenaikan selama periode tahun 2017 hingga tahun 2022. Total pengeluaran input industri agro tertinggi terjadi pada tahun 2022, dimana nilainya mencapai 2.178 Trilyun Rupiah. Pada masa Covid-19 yaitu tahun 2019-2020, total input industri agro mengalami penurunan tipis sebesar 0,22 persen. Secara umum, nilai input pasca pandemi lebih tinggi dibandingkan sebelum pandemi terjadi.  
+
+*Catatan*: Input meliputi pengeluaran upah untuk tenaga kerja, bahan baku lokal dan impor, serta pengeluaran untuk input lainnya yang dikeluarkan oleh perusahaan. 
+
+```{r}
+# data total pengeluaran
+sum_exp <- data.frame(
+  year = 2017:2022,
+  total = c(
+    sum((fil_stpim17$Zpdvcu17 + fil_stpim17$Zndvcu17 + fil_stpim17$Rdnvcu17 + fil_stpim17$Rimvcu17 + fil_stpim17$It1vcu17)/1e9, na.rm = TRUE),
+    sum((fil_stpim18$Zpdvcu18 + fil_stpim18$Zndvcu18 + fil_stpim18$Rdnvcu18 + fil_stpim18$Rimvcu18 + fil_stpim18$It1vcu18)/1e9, na.rm = TRUE),
+    sum((fil_stpim19$Zpdvcu19 + fil_stpim19$Zndvcu19 + fil_stpim19$Rdnvcu19 + fil_stpim19$Rimvcu19 + fil_stpim19$It1vcu19)/1e9, na.rm = TRUE),
+    sum((fil_stpim20$Zpdvcu20 + fil_stpim20$Zndvcu20 + fil_stpim20$Rdnvcu20 + fil_stpim20$Rimvcu20 + fil_stpim20$It1vcu20)/1e9, na.rm = TRUE),
+    sum((fil_stpim21$Zpdvcu21 + fil_stpim21$Zndvcu21 + fil_stpim21$Rdnvcu21 + fil_stpim21$Rimvcu21 + fil_stpim21$It1vcu21)/1e9, na.rm = TRUE),
+    sum((fil_stpim22$Zpdvcu22 + fil_stpim22$Zndvcu22 + fil_stpim22$Rdnvcu22 + fil_stpim22$Rimvcu22 + fil_stpim22$It1vcu22)/1e9, na.rm = TRUE)
+  )
+)
+
+# buat plot
+ggplot(sum_exp, aes(x = factor(year), y = total)) +
+  geom_bar(stat = "identity", fill = "bisque3") +
+  geom_text(
+    aes(label = label_number(big.mark = ".", decimal.mark = ",")(total)),
+    vjust = -0.3
+  ) +
+  labs(
+    x = "Tahun",
+    y = "Total Input (Trilyun)",
+    title = "Total Input Industri Agro tahun 2017-2022", 
+    caption = "Sumber: STPIM Data 2017–2022"
+  ) +
+  theme_minimal()
+```
+ 
+### Struktur Input
+
+Sepanjang tahun 2017-2022 bahan baku lokal secara konsisten menyumbang nilai pengeluaran terbesar pada industri agro. 
+Pada tahun 2022, struktur input industri agro didominasi oleh pengeluaran bahan baku lokal (76 persen atau 16.600 Trilyun Rupiah), lainnya (9,9 persen), bahan baku impor (8,5 persen atau 1.850 Trilyun Rupiah), dan upah tenaga kerja (5,4 persen). 
+
+```{r}
+sum_exp_comp <- data.frame(
+  year = 2017:2022,
+  Upah_tk = c(
+    sum((fil_stpim17$Zpdvcu17 + fil_stpim17$Zndvcu17)/1e9, na.rm = TRUE),
+    sum((fil_stpim18$Zpdvcu18 + fil_stpim18$Zndvcu18)/1e9, na.rm = TRUE),
+    sum((fil_stpim19$Zpdvcu19 + fil_stpim19$Zndvcu19)/1e9, na.rm = TRUE),
+    sum((fil_stpim20$Zpdvcu20 + fil_stpim20$Zndvcu20)/1e9, na.rm = TRUE),
+    sum((fil_stpim21$Zpdvcu21 + fil_stpim21$Zndvcu21)/1e9, na.rm = TRUE),
+    sum((fil_stpim22$Zpdvcu22 + fil_stpim22$Zndvcu22)/1e9, na.rm = TRUE)
+  ),
+  BBlok = c(
+    sum(fil_stpim17$Rdnvcu17/1e9, na.rm = TRUE),
+    sum(fil_stpim18$Rdnvcu18/1e9, na.rm = TRUE),
+    sum(fil_stpim19$Rdnvcu19/1e9, na.rm = TRUE),
+    sum(fil_stpim20$Rdnvcu20/1e9, na.rm = TRUE),
+    sum(fil_stpim21$Rdnvcu21/1e9, na.rm = TRUE),
+    sum(fil_stpim22$Rdnvcu22/1e9, na.rm = TRUE)
+  ),
+  BBim = c(
+    sum(fil_stpim17$Rimvcu17/1e9, na.rm = TRUE),
+    sum(fil_stpim18$Rimvcu18/1e9, na.rm = TRUE),
+    sum(fil_stpim19$Rimvcu19/1e9, na.rm = TRUE),
+    sum(fil_stpim20$Rimvcu20/1e9, na.rm = TRUE),
+    sum(fil_stpim21$Rimvcu21/1e9, na.rm = TRUE),
+    sum(fil_stpim22$Rimvcu22/1e9, na.rm = TRUE)
+  ), 
+  Lainnya = c(
+    sum(fil_stpim17$It1vcu17/1e9, na.rm = TRUE),
+    sum(fil_stpim18$It1vcu18/1e9, na.rm = TRUE),
+    sum(fil_stpim19$It1vcu19/1e9, na.rm = TRUE),
+    sum(fil_stpim20$It1vcu20/1e9, na.rm = TRUE),
+    sum(fil_stpim21$It1vcu21/1e9, na.rm = TRUE),
+    sum(fil_stpim22$It1vcu22/1e9, na.rm = TRUE)
+  )
+)
+
+sum_exp_long <- sum_exp_comp %>%
+  pivot_longer(
+    cols = -year,
+    names_to = "Komponen",
+    values_to = "nilai"
+  )
+
+library(ggplot2)
+library(scales)
+
+ggplot(sum_exp_long, aes(x = factor(year), y = nilai, fill = Komponen)) +
+  geom_bar(stat = "identity") +
+  geom_text(
+    aes(label = paste0(round(nilai),0)),
+    position = position_stack(vjust = 0.5),
+    size = 2 )+
+  labs(
+    x = "Tahun",
+    y = "Total Pengeluaran (Triliun)",
+    title = "Struktur Input Industri Agro Tahun 2017–2022",
+    fill = "Komponen",
+    caption = "Sumber: Data STPIM 2017–2022"
+  ) +
+  scale_fill_manual(
+    values = c(
+      "BBim" = "#1f78b4",
+      "BBlok" = "#33a02c",
+      "Lainnya" = "#6a3d9a",
+      "Upah_tk" = "#ff7f00"
+    ),
+    labels = c(
+      "BBim" = "Bahan Baku Impor",
+      "BBlok" = "Bahan Baku Lokal",
+      "Lainnya" = "Lainnya",
+      "Upah_tk" = "Upah Tenaga Kerja"
+    )
+  ) +
+  scale_y_continuous(labels = label_number(big.mark = ".", decimal.mark = ",")) +
+  theme_minimal()
+
+
+```
+```{r}
+library(dplyr)
+
+sum_exp22 <- data.frame(
+  Komponen = c("Upah_tk", "BBlok", "BBim", "Lainnya"),
+  nilai = c(
+    sum((fil_stpim22$Zpdvcu22 + fil_stpim22$Zndvcu22)/1e9, na.rm = TRUE),
+    sum(fil_stpim22$Rdnvcu22/1e9, na.rm = TRUE),
+    sum(fil_stpim22$Rimvcu22/1e9, na.rm = TRUE),
+    sum(fil_stpim22$It1vcu22/1e9, na.rm = TRUE)
+  )
+)
+
+sum_exp22 <- sum_exp22 %>%
+  mutate(persen = nilai / sum(nilai) * 100)
+
+library(ggplot2)
+library(scales)
+
+ggplot(sum_exp22, aes(x = "", y = persen, fill = Komponen)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar("y") +
+  geom_text(
+    aes(label = paste0(round(persen,1), "%")),
+    position = position_stack(vjust = 0.5),
+    size = 2
+  ) +
+  labs(
+    title = "Komposisi Pengeluaran Industri Agro Tahun 2022",
+    fill = "Komponen",
+    caption = "Sumber: Data STPIM 2022"
+  ) +
+  scale_fill_manual(
+    values = c(
+      "BBim" = "#1f78b4",
+      "BBlok" = "#33a02c",
+      "Lainnya" = "#6a3d9a",
+      "Upah_tk" = "#ff7f00"
+    ),
+    labels = c(
+      "BBim" = "Bahan Baku Impor",
+      "BBlok" = "Bahan Baku Lokal",
+      "Lainnya" = "Lainnya",
+      "Upah_tk" = "Upah Tenaga Kerja"
+    )
+  ) +
+  theme_void()
+```
+
+### Isu Peningkatan Nilai Tambah pada Industri Agro
+
+Secara umum, nilai tambah industri agro menunjukkan tren meningkat dalam jangka menengah. Pada tahun 2017 nilainya sebesar 2.087,8 triliun rupiah dan meningkat menjadi 2.755,6 triliun rupiah pada tahun 2022. Artinya, selama periode tersebut terjadi peningkatan sekitar 667,8 triliun rupiah atau sekitar 32 persen. Hal ini menunjukkan bahwa sektor industri agro tetap menjadi salah satu sektor yang berperan penting dalam penciptaan nilai tambah di industri pengolahan. Meskipun tren keseluruhan meningkat, terdapat penurunan pada tahun 2020, yaitu dari 2.433,3 triliun rupiah pada tahun 2019 menjadi 2.269,3 triliun rupiah pada tahun 2020. Setelah penurunan pada tahun 2020, nilai tambah industri agro kembali mengalami pemulihan yang cukup kuat.
+
+```{r}
+# data ntb
+ntb_seri <- data.frame(
+  year = 2017:2022,
+  ntb = c(
+    sum((fil_stpim17$Output17 - fil_stpim17$Iinput17 + fil_stpim17$Zpdvcu17 + fil_stpim17$Zndvcu17 + fil_stpim17$Vtlvcu17)/1e9, na.rm = TRUE),
+    sum((fil_stpim18$Output18 - fil_stpim18$Iinput18 + fil_stpim18$Zpdvcu18 + fil_stpim18$Zndvcu18 + fil_stpim18$Vtlvcu18)/1e9, na.rm = TRUE),
+    sum((fil_stpim19$Output19 - fil_stpim19$Iinput19 + fil_stpim19$Zpdvcu19 + fil_stpim19$Zndvcu19 + fil_stpim19$Vtlvcu19)/1e9, na.rm = TRUE),
+    sum((fil_stpim20$Output20 - fil_stpim20$Iinput20 + fil_stpim20$Zpdvcu20 + fil_stpim20$Zndvcu20 + fil_stpim20$Vtlvcu20)/1e9, na.rm = TRUE),
+    sum((fil_stpim21$Output21 - fil_stpim21$Iinput21 + fil_stpim21$Zpdvcu21 + fil_stpim21$Zndvcu21 + fil_stpim21$Vtlvcu21)/1e9, na.rm = TRUE),
+    sum((fil_stpim22$Output22 - fil_stpim22$Iinput22 + fil_stpim22$Zpdvcu22 + fil_stpim22$Zndvcu22 + fil_stpim22$Vtlvcu22)/1e9, na.rm = TRUE)
+  )
+)
+
+# buat plot
+ggplot(ntb_seri, aes(x = factor(year), y = ntb)) +
+  geom_bar(stat = "identity", fill = "tomato") +
+  geom_text(
+  aes(label = label_number(big.mark = ".", decimal.mark = ",")(ntb)),
+  vjust = -0.3
+  ) +
+  labs(
+    x = "Tahun",
+    y = "NTB (Trilyun)",
+    title = "Nilai Tambah Industri Agro tahun 2017-2022", 
+    caption = "Sumber: STPIM Data 2017–2022"
+  ) +
+  theme_minimal()
+```
+
+
+
+### Summary
+
+Jumlah industri agro dan penyerapan tenaga kerja di industri agro menurun sepanjang tahun 2017-2022. Namun, nilai outputnya terus meningkat. 
+
+```{r}
+# Lengkapi uraian, tambahkan sumber, outline, 
+# 9 Maret 2026 Buat tabel 1-4. 
+# 10 maret 2026 lengkapi tabel, buat analisis
+```
+
+
